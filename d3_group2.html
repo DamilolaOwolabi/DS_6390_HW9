@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Banner</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        svg {
+            background-color: #0073e6;
+            border-radius: 10px;
+            position: relative;
+        }
+        text {
+            fill: white;
+            font-size: 48px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+        }
+        .background-text {
+            fill: rgba(255, 255, 255, 0.1);
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        const width = 800;
+        const height = 400;
+        const colors = ["#ff0000", "#00ff00", "#0000ff", "#ff00ff", "#00ffff", "#ffff00"];
+
+        const svg = d3.select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        const words = ["SMU", "MSDS", "Data", "Viz"];
+
+        svg.selectAll("text")
+            .data(words)
+            .enter()
+            .append("text")
+            .attr("x", (d, i) => (width / words.length) * i + (width / words.length / 2))
+            .attr("y", height / 2)
+            .attr("dy", ".35em")
+            .attr("text-anchor", "middle")
+            .text(d => d)
+            .on("mouseover", function() {
+                d3.select(this).transition().duration(200)
+                    .style("fill", colors[Math.floor(Math.random() * colors.length)]);
+            })
+            .on("mouseout", function() {
+                d3.select(this).transition().duration(200)
+                    .style("fill", "white");
+            });
+
+        const animateText = () => {
+            svg.selectAll("text")
+                .transition()
+                .duration(2000)
+                .attr("y", height / 2 - 100)
+                .transition()
+                .duration(2000)
+                .attr("y", height / 2 + 100)
+                .on("end", animateText);
+        };
+
+        animateText();
+
+        const generateRandomNumber = () => Math.floor(Math.random() * 100);
+
+        const createBackgroundNumbers = () => {
+            const numCount = 30;
+
+            for (let i = 0; i < numCount; i++) {
+                svg.append("text")
+                    .attr("class", "background-text")
+                    .attr("x", Math.random() * width)
+                    .attr("y", Math.random() * height)
+                    .text(generateRandomNumber());
+            }
+
+            const animateNumbers = () => {
+                svg.selectAll(".background-text")
+                    .transition()
+                    .duration(4000)
+                    .attr("x", () => Math.random() * width)
+                    .attr("y", () => Math.random() * height)
+                    .on("end", animateNumbers);
+            };
+
+            animateNumbers();
+        };
+
+        const createBackgroundGraphs = () => {
+            const circleData = d3.range(10).map(() => ({ x: Math.random() * width, y: Math.random() * height, r: Math.random() * 10 + 5 }));
+            const barData = d3.range(10).map(() => ({ x: Math.random() * width, y: height - Math.random() * 50, height: Math.random() * 50 }));
+            const lineData = d3.range(10).map((d, i) => ({ x: i * (width / 10), y: Math.random() * height }));
+
+            svg.selectAll(".background-circle")
+                .data(circleData)
+                .enter()
+                .append("circle")
+                .attr("class", "background-circle")
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", d => d.r)
+                .style("fill", "rgba(255, 255, 255, 0.2)");
+
+            svg.selectAll(".background-bar")
+                .data(barData)
+                .enter()
+                .append("rect")
+                .attr("class", "background-bar")
+                .attr("x", d => d.x)
+                .attr("y", d => d.y)
+                .attr("width", 10)
+                .attr("height", d => d.height)
+                .style("fill", "rgba(255, 255, 255, 0.2)");
+
+            const line = d3.line()
+                .x(d => d.x)
+                .y(d => d.y);
+
+            svg.append("path")
+                .datum(lineData)
+                .attr("class", "background-line")
+                .attr("d", line)
+                .style("fill", "none")
+                .style("stroke", "rgba(255, 255, 255, 0.2)")
+                .style("stroke-width", 2);
+
+            const animateGraphs = () => {
+                svg.selectAll(".background-circle")
+                    .transition()
+                    .duration(4000)
+                    .attr("cx", () => Math.random() * width)
+                    .attr("cy", () => Math.random() * height)
+                    .on("end", animateGraphs);
+
+                svg.selectAll(".background-bar")
+                    .transition()
+                    .duration(4000)
+                    .attr("x", () => Math.random() * width)
+                    .attr("y", d => height - Math.random() * 50)
+                    .attr("height", () => Math.random() * 50)
+                    .on("end", animateGraphs);
+
+                svg.selectAll(".background-line")
+                    .datum(d3.range(10).map((d, i) => ({ x: i * (width / 10), y: Math.random() * height })))
+                    .transition()
+                    .duration(4000)
+                    .attr("d", line)
+                    .on("end", animateGraphs);
+            };
+
+            animateGraphs();
+        };
+
+        createBackgroundNumbers();
+        createBackgroundGraphs();
+    </script>
+</body>
+</html>
